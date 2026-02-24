@@ -24,8 +24,12 @@ internal static class TumbleLaunchDamagePatch
 
         try
         {
+            // Only scale the player's tumble "Hurt Collider", not enemy attack colliders
+            // (e.g. "Attack Vacuum Hurt Collider", "Attack Impact Hurt Collider", "Hurt Collider First Hit")
+            if (__instance.gameObject.name != "Hurt Collider")
+                return;
+
             // Get local player upgrades to calculate multiplier.
-            // We use the first available player from the list.
             var players = SemiFunc.PlayerGetAll();
             if (players == null || players.Count == 0)
                 return;
