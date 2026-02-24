@@ -1,6 +1,6 @@
 # Increase Tumble Damage
 
-A [BepInEx](https://github.com/BepInEx/BepInEx) mod for **R.E.P.O.** that scales tumble launch damage based on your upgrade level and provides configurable character stat overrides.
+A [BepInEx](https://github.com/BepInEx/BepInEx) mod for **R.E.P.O.** that scales tumble launch damage based on your upgrade level.
 
 ## Features
 
@@ -15,7 +15,7 @@ A [BepInEx](https://github.com/BepInEx/BepInEx) mod for **R.E.P.O.** that scales
 | 5     | 5.5×                     | 82               |
 | 10    | 11×                      | 165              |
 
-> Only tumble launch damage is affected. Guns, items, and other damage sources are **not** scaled.
+> Only tumble launch damage is affected. Weapons, explosions, and other damage sources are **not** scaled.
 
 ### 🛡️ Self-Damage Reduction
 
@@ -24,12 +24,6 @@ A [BepInEx](https://github.com/BepInEx/BepInEx) mod for **R.E.P.O.** that scales
 - Default: up to **100% reduction** at **10 upgrades**
 - At 5 upgrades → 50% reduction
 - Fully configurable via config
-
-### 📊 Character Stat Overrides
-
-Override any of the 12 character stats via config. Default is `0` for all stats (no change — game's natural values preserved):
-
-Health, Sprint Speed, Map Player Count, Energy, Extra Jump, Grab Range, Grab Strength, Tumble Launch, Crouch Rest, Tumble Wings, Tumble Climb, Death Head Battery
 
 ## Configuration
 
@@ -40,7 +34,6 @@ All settings are in `BepInEx/config/headclef.IncreaseTumbleDamage.cfg`.
 | Key | Default | Description |
 |-----|---------|-------------|
 | Enable | `true` | Toggle enemy damage scaling on/off |
-| Base Damage | `0` | Override tumble hit damage (0 = game default) |
 | Multiplier Per Level | `1.1` | Multiplier per upgrade level. Formula: `level × value` |
 | Max Multiplier | `0` | Cap the multiplier (0 = no cap) |
 
@@ -52,45 +45,24 @@ All settings are in `BepInEx/config/headclef.IncreaseTumbleDamage.cfg`.
 | Upgrades Needed For Max Reduction | `10` | Upgrades to reach full reduction |
 | Max Damage Reduction | `1.0` | Maximum reduction ratio (1.0 = 100%) |
 
-### [Character Stats]
-
-| Key | Default | Description |
-|-----|---------|-------------|
-| Health | `0` | Health upgrades override |
-| Sprint Speed | `0` | Sprint Speed upgrades override |
-| Map Player Count | `0` | Map Player Count upgrades override |
-| Energy | `0` | Energy (Stamina) upgrades override |
-| Extra Jump | `0` | Extra Jump upgrades override |
-| Grab Range | `0` | Grab Range upgrades override |
-| Grab Strength | `0` | Grab Strength upgrades override |
-| Tumble Launch | `0` | Tumble Launch upgrades override |
-| Crouch Rest | `0` | Crouch Rest upgrades override |
-| Tumble Wings | `0` | Tumble Wings upgrades override |
-| Tumble Climb | `0` | Tumble Climb upgrades override |
-| Death Head Battery | `0` | Death Head Battery upgrades override |
-
-> All stat overrides default to `0`, meaning **no change**. Set a value to override the game's natural upgrade level.
-
 ## Multiplayer Behavior
 
-- **Enemy damage scaling** runs on the **host**. If the host has the mod, all players' tumble damage is scaled. Clients without the mod still benefit.
-- **Self-damage reduction** runs **per-client**. Only the player with the mod installed gets reduced self-damage.
-- **Stat overrides** are applied on the **host**. The host's config determines stat values for the session.
-
-> **Recommendation:** For the best experience, the **host** should have the mod installed.
+- **Enemy damage scaling** — runs wherever the tumble hit is processed. Works based on the hitting player's upgrade level.
+- **Self-damage reduction** — runs per-client. Only players with the mod installed get reduced self-damage.
 
 ## Requirements
 
 - [BepInEx 5.x](https://github.com/BepInEx/BepInEx) installed for R.E.P.O.
+- [Character Stats](https://github.com/headclef/Repo-CharacterStats) — required dependency (reads player upgrade levels)
 
 ## Installation
 
-1. Download the latest release.
+1. Install **Character Stats** mod first (or let Thunderstore handle the dependency).
 2. Place `Increase Tumble Damage.dll` into your `BepInEx/plugins` folder.
 3. Launch R.E.P.O. — a config file is generated on first run.
-4. Edit `BepInEx/config/headclef.IncreaseTumbleDamage.cfg` or from In-Game Mod Config Menu to customize.
+4. Edit `BepInEx/config/headclef.IncreaseTumbleDamage.cfg` or use the in-game config menu.
 
-> **Note:** If updating from a previous version, delete the old config file to get new default values.
+> **Updating from v1.0.x?** Stat override features have moved to a separate mod. Delete the old config file to get clean defaults.
 
 ## Development
 
@@ -98,13 +70,16 @@ All settings are in `BepInEx/config/headclef.IncreaseTumbleDamage.cfg`.
 ```
 ├── Increase Tumble Damage.cs          # Plugin entry point & config
 ├── Patches/
-│   ├── StatOverridePatch.cs           # Harmony postfix — stat overrides
 │   └── TumbleLaunchDamagePatch.cs     # Harmony prefixes — damage scaling
 └── README.md
 ```
 
 ### Building
+
+> **Note:** Build Character Stats first, as this project references it at compile time.
+
 ```bash
+dotnet build "../Character Stats/Character Stats.csproj"
 dotnet build
 ```
 

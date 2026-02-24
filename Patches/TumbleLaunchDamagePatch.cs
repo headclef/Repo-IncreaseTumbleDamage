@@ -1,4 +1,5 @@
 using System;
+using static Character_Stats.Character_Stats;
 using HarmonyLib;
 using UnityEngine;
 
@@ -44,8 +45,7 @@ internal static class TumbleLaunchDamagePatch
                 return;
 
             string steamId = SemiFunc.PlayerGetSteamID(avatar);
-            if (!StatsManager.instance.playerUpgradeLaunch.TryGetValue(steamId, out int tumbleUpgrades))
-                return;
+            int tumbleUpgrades = GetUpgradeLevel(steamId, "Launch");
 
             float multiplierPerLevel = Increase_Tumble_Damage.MultiplierPerLevel.Value;
             float maxMultiplier = Increase_Tumble_Damage.MaxMultiplier.Value;
@@ -102,7 +102,7 @@ internal static class TumbleLaunchDamagePatch
                 return;
 
             string steamId = SemiFunc.PlayerGetSteamID(__instance.playerAvatar);
-            int tumbleUpgrades = StatsManager.instance.playerUpgradeLaunch[steamId];
+            int tumbleUpgrades = GetUpgradeLevel(steamId, "Launch");
 
             float reductionRatio;
             if (upgradesNeeded == 0)
