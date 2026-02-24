@@ -1,0 +1,24 @@
+# Binaries
+**/bin/
+**/obj/
+
+# BepInEx
+**/bepinex/
+**/plugins/
+**/repo/
+
+# Visual Studio
+.vs/
+
+# NuGet
+**/packages/
+**/packages.config
+
+# Other
+**/*.user
+**/*.userosscache
+**/*.sln.docstates
+**/*.suo
+**/*.ntvs-data
+**/*.njsproj
+**/*.sln.docstates
