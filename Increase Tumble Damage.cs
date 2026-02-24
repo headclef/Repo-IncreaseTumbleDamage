@@ -11,7 +11,7 @@ public class Increase_Tumble_Damage : BaseUnityPlugin
 {
     private const string PluginGuid = "headclef.IncreaseTumbleDamage";
     private const string PluginName = "Increase Tumble Damage";
-    private const string PluginVersion = "1.0.7";
+    private const string PluginVersion = "1.0.8";
 
     internal static Increase_Tumble_Damage Instance { get; private set; } = null!;
     internal new static ManualLogSource Logger => Instance._logger;

@@ -1,6 +1,6 @@
 {
     "name": "IncreaseTumbleDamage",
-    "version_number": "1.0.7",
+    "version_number": "1.0.8",
     "website_url": "https://github.com/headclef/Repo-IncreaseTumbleDamage",
     "description": "Scales tumble launch damage by upgrade level and provides configurable character stat overrides for R.E.P.O.",
     "dependencies": [
