@@ -7,9 +7,11 @@ namespace Increase_Tumble_Damage.Patches;
 [HarmonyPatch]
 internal static class TumbleLaunchDamagePatch
 {
-    // Flag to track when we're inside a HurtCollider.EnemyHurt call.
-    private static bool _inEnemyHurt;
-    private static float _tumbleMultiplier = 1f;
+    // ── Helper MonoBehaviour to remember the original base damage ──
+    public class BaseDamageTag : MonoBehaviour
+    {
+        public int baseDamage;
+    }
 
     // ── Enemy Damage Scaling ──
 
@@ -17,26 +19,33 @@ internal static class TumbleLaunchDamagePatch
     [HarmonyPrefix]
     private static void EnemyHurt_Prefix(HurtCollider __instance)
     {
-        _inEnemyHurt = false;
-
         if (!Increase_Tumble_Damage.EnableDamageOnEnemy.Value)
             return;
 
         try
         {
-            // Only scale the player's tumble "Hurt Collider", not enemy attack colliders
-            // (e.g. "Attack Vacuum Hurt Collider", "Attack Impact Hurt Collider", "Hurt Collider First Hit")
-            if (__instance.gameObject.name != "Hurt Collider")
+            // The tumble HurtCollider lives under: PlayerAvatar(Clone) / Player Tumble(Clone) / Hurt Collider
+            // GetComponentInParent<PlayerTumble>() will find it only for the player's tumble collider.
+            var playerTumble = __instance.GetComponentInParent<PlayerTumble>();
+            if (playerTumble == null)
+                return; // Not the player's tumble collider (weapon, explosion, enemy, etc.)
+
+            // Save the original base damage so we can restore it in the postfix
+            // (otherwise the damage would compound on repeated hits)
+            if (!__instance.TryGetComponent<BaseDamageTag>(out var tag))
+            {
+                tag = __instance.gameObject.AddComponent<BaseDamageTag>();
+                tag.baseDamage = __instance.enemyDamage;
+            }
+
+            // Get upgrade level from the player who owns this tumble collider
+            var avatar = playerTumble.playerAvatar;
+            if (avatar == null)
                 return;
 
-            // Get local player upgrades to calculate multiplier.
-            var players = SemiFunc.PlayerGetAll();
-            if (players == null || players.Count == 0)
+            string steamId = SemiFunc.PlayerGetSteamID(avatar);
+            if (!StatsManager.instance.playerUpgradeLaunch.TryGetValue(steamId, out int tumbleUpgrades))
                 return;
-
-            var localPlayer = players[0];
-            string steamId = SemiFunc.PlayerGetSteamID(localPlayer);
-            int tumbleUpgrades = StatsManager.instance.playerUpgradeLaunch[steamId];
 
             float multiplierPerLevel = Increase_Tumble_Damage.MultiplierPerLevel.Value;
             float maxMultiplier = Increase_Tumble_Damage.MaxMultiplier.Value;
@@ -45,14 +54,15 @@ internal static class TumbleLaunchDamagePatch
                 return;
 
             // Formula: multiplier = level × MultiplierPerLevel
-            // E.g. level 1 × 1.1 = 1.1, level 10 × 1.1 = 11
-            _tumbleMultiplier = multiplierPerLevel * tumbleUpgrades;
+            float multiplier = multiplierPerLevel * tumbleUpgrades;
             if (maxMultiplier > 0f)
-                _tumbleMultiplier = Math.Min(_tumbleMultiplier, maxMultiplier);
-            _inEnemyHurt = true;
+                multiplier = Math.Min(multiplier, maxMultiplier);
+
+            // Scale the enemyDamage field directly (same approach as reference mod)
+            __instance.enemyDamage = Mathf.RoundToInt(tag.baseDamage * multiplier);
 
             Increase_Tumble_Damage.Logger.LogInfo(
-                $"EnemyHurt: GO={__instance.gameObject.name}, multiplier={_tumbleMultiplier:F2}, upgrades={tumbleUpgrades}, enemyDamage={__instance.enemyDamage}");
+                $"EnemyHurt TUMBLE: damage {tag.baseDamage} -> {__instance.enemyDamage} (multiplier: {multiplier:F2}, upgrades: {tumbleUpgrades})");
         }
         catch (Exception ex)
         {
@@ -62,26 +72,13 @@ internal static class TumbleLaunchDamagePatch
 
     [HarmonyPatch(typeof(HurtCollider), "EnemyHurt")]
     [HarmonyPostfix]
-    private static void EnemyHurt_Postfix()
+    private static void EnemyHurt_Postfix(HurtCollider __instance)
     {
-        _inEnemyHurt = false;
-    }
-
-    /// <summary>
-    /// Intercepts EnemyHealth.Hurt to scale the damage when called from HurtCollider.EnemyHurt.
-    /// </summary>
-    [HarmonyPatch(typeof(EnemyHealth), "Hurt")]
-    [HarmonyPrefix]
-    private static void EnemyHealth_Hurt_Prefix(ref int _damage, Vector3 _hurtDirection)
-    {
-        if (!_inEnemyHurt || _tumbleMultiplier <= 1f)
-            return;
-
-        int original = _damage;
-        _damage = Math.Max((int)(_damage * _tumbleMultiplier), 1);
-
-        Increase_Tumble_Damage.Logger.LogInfo(
-            $"EnemyHealth.Hurt SCALED: damage {original} -> {_damage} (multiplier: {_tumbleMultiplier:F2})");
+        // Restore original damage after hit so it doesn't compound
+        if (__instance.TryGetComponent<BaseDamageTag>(out var tag))
+        {
+            __instance.enemyDamage = tag.baseDamage;
+        }
     }
 
     // ── Self-Damage Reduction ──
