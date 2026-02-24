@@ -110,7 +110,7 @@ public class Increase_Tumble_Damage : BaseUnityPlugin
         const string playerSection = "Damage On Player";
         EnableDamageOnPlayer = Config.Bind(playerSection, "Enable", true,
             "Enable reduction of self-damage from tumble impacts based on upgrade level.");
-        UpgradesNeededForMaxReduction = Config.Bind(playerSection, "Upgrades Needed For Max Reduction", 8,
+        UpgradesNeededForMaxReduction = Config.Bind(playerSection, "Upgrades Needed For Max Reduction", 10,
             "Number of Tumble Launch upgrades required to reach maximum self-damage reduction.");
         MaxDamageReduction = Config.Bind(playerSection, "Max Damage Reduction", 1.0f,
             "Maximum self-damage reduction ratio from tumble impacts. E.g. 0.75 = 75% reduction (100 dmg -> 25).");
