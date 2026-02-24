@@ -173,30 +173,35 @@ internal static class TumbleLaunchDamagePatch
     /// <summary>
     /// Calculates scaled hit-enemy damage based on the player's Tumble Launch upgrade level.
     /// Called from the IL-injected code in HitEnemy.
-    /// Formula: baseDamage + (upgradesOwned * damagePerLevel)
+    /// Formula: damage = baseDamage * min(1 + multiplierPerLevel * skillLevel, maxMultiplier)
     /// </summary>
     public static int CalculateHitEnemyDamage(int originalDamage, PlayerTumble tumble)
     {
         try
         {
-            int damagePerLevel = Increase_Tumble_Damage.DamagePerUpgradeLevel.Value;
+            float multiplierPerLevel = Increase_Tumble_Damage.MultiplierPerLevel.Value;
+            float maxMultiplier = Increase_Tumble_Damage.MaxMultiplier.Value;
             int configuredBase = Increase_Tumble_Damage.TumbleDamageOnHitEnemy.Value;
 
             // Use configured base if set, otherwise keep the game's original value.
             int baseDamage = configuredBase > 0 ? configuredBase : originalDamage;
 
             // If no per-level scaling, just return the base.
-            if (damagePerLevel == 0)
+            if (multiplierPerLevel <= 0f)
                 return baseDamage;
 
             // Read the player's current Tumble Launch upgrade count.
             string steamId = SemiFunc.PlayerGetSteamID(tumble.playerAvatar);
             int tumbleUpgrades = StatsManager.instance.playerUpgradeLaunch[steamId];
 
-            int scaledDamage = baseDamage + (tumbleUpgrades * damagePerLevel);
+            // Calculate multiplier: starts at 1.0, grows by multiplierPerLevel per upgrade, capped at maxMultiplier.
+            float multiplier = 1f + (multiplierPerLevel * tumbleUpgrades);
+            multiplier = Math.Min(multiplier, maxMultiplier);
+
+            int scaledDamage = (int)(baseDamage * multiplier);
 
             Increase_Tumble_Damage.Logger.LogDebug(
-                $"HitEnemy damage: {originalDamage} -> {scaledDamage} (base: {baseDamage}, upgrades: {tumbleUpgrades}, per level: {damagePerLevel})");
+                $"HitEnemy damage: {originalDamage} -> {scaledDamage} (base: {baseDamage}, multiplier: {multiplier:F2}, upgrades: {tumbleUpgrades})");
 
             return Math.Max(scaledDamage, 0);
         }

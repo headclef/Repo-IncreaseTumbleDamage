@@ -37,7 +37,8 @@ public class Increase_Tumble_Damage : BaseUnityPlugin
     // ── Damage Scaling Config Entries ──
     internal static ConfigEntry<bool> EnableDamageOnEnemy = null!;
     internal static ConfigEntry<int> TumbleDamageOnHitEnemy = null!;
-    internal static ConfigEntry<int> DamagePerUpgradeLevel = null!;
+    internal static ConfigEntry<float> MultiplierPerLevel = null!;
+    internal static ConfigEntry<float> MaxMultiplier = null!;
 
     internal static ConfigEntry<bool> EnableDamageOnPlayer = null!;
     internal static ConfigEntry<int> UpgradesNeededForMaxReduction = null!;
@@ -100,8 +101,10 @@ public class Increase_Tumble_Damage : BaseUnityPlugin
             "Enable scaling of damage dealt to enemies when tumble-hitting them.");
         TumbleDamageOnHitEnemy = Config.Bind(enemySection, "Base Damage", 0,
             "Base damage when hitting an enemy while tumbling. 0 = use game's default value (5).");
-        DamagePerUpgradeLevel = Config.Bind(enemySection, "Damage Per Upgrade Level", 2,
-            "Additional damage dealt per Tumble Launch upgrade level.");
+        MultiplierPerLevel = Config.Bind(enemySection, "Multiplier Per Level", 0.05f,
+            "Damage multiplier added per Tumble Launch upgrade level. E.g. 0.05 means each level adds 5% damage.");
+        MaxMultiplier = Config.Bind(enemySection, "Max Multiplier", 1.50f,
+            "Maximum damage multiplier cap. E.g. 1.50 means damage can reach at most 150% of base.");
 
         // Self-damage reduction scaling
         const string playerSection = "Damage On Player";
