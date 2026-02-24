@@ -35,8 +35,11 @@ public class Increase_Tumble_Damage : BaseUnityPlugin
     internal static ConfigEntry<int> DeathHeadBonus = null!;
 
     // ── Damage Scaling Config Entries ──
+    internal static ConfigEntry<bool> EnableDamageOnEnemy = null!;
     internal static ConfigEntry<int> TumbleDamageOnHitEnemy = null!;
     internal static ConfigEntry<int> DamagePerUpgradeLevel = null!;
+
+    internal static ConfigEntry<bool> EnableDamageOnPlayer = null!;
     internal static ConfigEntry<int> UpgradesNeededForMaxReduction = null!;
     internal static ConfigEntry<float> MaxDamageReduction = null!;
 
@@ -64,7 +67,6 @@ public class Increase_Tumble_Damage : BaseUnityPlugin
     private void BindConfiguration()
     {
         const string statsSection = "Stats";
-        const string damageSection = "Damage Scaling";
 
         // Stats — 0 means "don't change this stat, use the game's value"
         HealthBonus = Config.Bind(statsSection, "Health", 0,
@@ -92,14 +94,22 @@ public class Increase_Tumble_Damage : BaseUnityPlugin
         DeathHeadBonus = Config.Bind(statsSection, "Death Head Battery", 0,
             "Override for Death Head Battery upgrades. 0 = no change.");
 
-        // Damage scaling
-        TumbleDamageOnHitEnemy = Config.Bind(damageSection, "Tumble Damage On Hit Enemy", 0,
+        // Damage to enemy scaling
+        const string enemySection = "Damage On Enemy";
+        EnableDamageOnEnemy = Config.Bind(enemySection, "Enable", true,
+            "Enable scaling of damage dealt to enemies when tumble-hitting them.");
+        TumbleDamageOnHitEnemy = Config.Bind(enemySection, "Base Damage", 0,
             "Base damage when hitting an enemy while tumbling. 0 = use game's default value (5).");
-        DamagePerUpgradeLevel = Config.Bind(damageSection, "Damage Per Upgrade Level", 2,
-            "Additional damage dealt per Tumble Launch upgrade level. Scales the damage in HitEnemy.");
-        UpgradesNeededForMaxReduction = Config.Bind(damageSection, "Upgrades Needed For Max Reduction", 8,
+        DamagePerUpgradeLevel = Config.Bind(enemySection, "Damage Per Upgrade Level", 2,
+            "Additional damage dealt per Tumble Launch upgrade level.");
+
+        // Self-damage reduction scaling
+        const string playerSection = "Damage On Player";
+        EnableDamageOnPlayer = Config.Bind(playerSection, "Enable", true,
+            "Enable reduction of self-damage from tumble impacts based on upgrade level.");
+        UpgradesNeededForMaxReduction = Config.Bind(playerSection, "Upgrades Needed For Max Reduction", 8,
             "Number of Tumble Launch upgrades required to reach maximum self-damage reduction.");
-        MaxDamageReduction = Config.Bind(damageSection, "Max Damage Reduction", 1.0f,
+        MaxDamageReduction = Config.Bind(playerSection, "Max Damage Reduction", 1.0f,
             "Maximum self-damage reduction ratio from tumble impacts. E.g. 0.75 = 75% reduction (100 dmg -> 25).");
     }
 

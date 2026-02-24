@@ -16,6 +16,9 @@ internal static class TumbleLaunchDamagePatch
     [HarmonyTranspiler]
     private static IEnumerable<CodeInstruction> HitEnemy_Transpiler(IEnumerable<CodeInstruction> instructions)
     {
+        if (!Increase_Tumble_Damage.EnableDamageOnEnemy.Value)
+            return instructions;
+
         try
         {
             var matcher = new CodeMatcher(instructions);
@@ -81,6 +84,9 @@ internal static class TumbleLaunchDamagePatch
     [HarmonyTranspiler]
     private static IEnumerable<CodeInstruction> BreakImpact_Transpiler(IEnumerable<CodeInstruction> instructions)
     {
+        if (!Increase_Tumble_Damage.EnableDamageOnPlayer.Value)
+            return instructions;
+
         try
         {
             var matcher = new CodeMatcher(instructions);
