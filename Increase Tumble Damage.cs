@@ -36,6 +36,7 @@ public class Increase_Tumble_Damage : BaseUnityPlugin
 
     // ── Damage Scaling Config Entries ──
     internal static ConfigEntry<int> TumbleDamageOnHitEnemy = null!;
+    internal static ConfigEntry<int> DamagePerUpgradeLevel = null!;
     internal static ConfigEntry<int> UpgradesNeededForMaxReduction = null!;
     internal static ConfigEntry<float> MaxDamageReduction = null!;
 
@@ -93,11 +94,13 @@ public class Increase_Tumble_Damage : BaseUnityPlugin
 
         // Damage scaling
         TumbleDamageOnHitEnemy = Config.Bind(damageSection, "Tumble Damage On Hit Enemy", 0,
-            "Damage the player receives when hitting an enemy while tumbling. 0 = use game's default value.");
+            "Base damage when hitting an enemy while tumbling. 0 = use game's default value (5).");
+        DamagePerUpgradeLevel = Config.Bind(damageSection, "Damage Per Upgrade Level", 2,
+            "Additional damage dealt per Tumble Launch upgrade level. Scales the damage in HitEnemy.");
         UpgradesNeededForMaxReduction = Config.Bind(damageSection, "Upgrades Needed For Max Reduction", 8,
-            "Number of Tumble Launch upgrades required to reach maximum damage reduction.");
+            "Number of Tumble Launch upgrades required to reach maximum self-damage reduction.");
         MaxDamageReduction = Config.Bind(damageSection, "Max Damage Reduction", 1.0f,
-            "Maximum damage reduction ratio from tumble impacts. E.g. 0.75 = 75% reduction (100 dmg -> 25).");
+            "Maximum self-damage reduction ratio from tumble impacts. E.g. 0.75 = 75% reduction (100 dmg -> 25).");
     }
 
     internal void Patch()

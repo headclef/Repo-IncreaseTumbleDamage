@@ -9,19 +9,13 @@ namespace Increase_Tumble_Damage.Patches;
 internal static class TumbleLaunchDamagePatch
 {
     /// <summary>
-    /// Patches PlayerTumble.HitEnemy to replace the hardcoded self-damage value (5)
-    /// with the configured value, if non-zero.
+    /// Patches PlayerTumble.HitEnemy to inject damage scaling based on
+    /// the player's Tumble Launch upgrade level.
     /// </summary>
     [HarmonyPatch(typeof(PlayerTumble), nameof(PlayerTumble.HitEnemy))]
     [HarmonyTranspiler]
     private static IEnumerable<CodeInstruction> HitEnemy_Transpiler(IEnumerable<CodeInstruction> instructions)
     {
-        int configuredDamage = Increase_Tumble_Damage.TumbleDamageOnHitEnemy.Value;
-
-        // If configured to 0, leave the original damage intact.
-        if (configuredDamage == 0)
-            return instructions;
-
         try
         {
             var matcher = new CodeMatcher(instructions);
@@ -40,7 +34,13 @@ internal static class TumbleLaunchDamagePatch
                 return instructions;
             }
 
-            matcher.Set(OpCodes.Ldc_I4, configuredDamage);
+            // Replace the constant with a call to our scaling method.
+            // Stack before: [..., Ldc_I4_5]  →  Stack after: [..., scaledDamage]
+            matcher.Set(OpCodes.Ldc_I4_5, null); // keep original value on stack
+            matcher.Advance(1);
+            matcher.InsertAndAdvance(
+                new CodeInstruction(OpCodes.Ldarg_0),
+                new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(TumbleLaunchDamagePatch), nameof(CalculateHitEnemyDamage))));
 
             // Find the second occurrence.
             matcher.MatchForward(true,
@@ -56,9 +56,13 @@ internal static class TumbleLaunchDamagePatch
                 return instructions;
             }
 
-            matcher.Set(OpCodes.Ldc_I4, configuredDamage);
+            matcher.Set(OpCodes.Ldc_I4_5, null);
+            matcher.Advance(1);
+            matcher.InsertAndAdvance(
+                new CodeInstruction(OpCodes.Ldarg_0),
+                new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(TumbleLaunchDamagePatch), nameof(CalculateHitEnemyDamage))));
 
-            Increase_Tumble_Damage.Logger.LogDebug($"HitEnemy damage patched to {configuredDamage}.");
+            Increase_Tumble_Damage.Logger.LogDebug("HitEnemy damage scaling patch applied.");
             return matcher.InstructionEnumeration();
         }
         catch (Exception ex)
@@ -156,6 +160,43 @@ internal static class TumbleLaunchDamagePatch
         catch (Exception ex)
         {
             Increase_Tumble_Damage.Logger.LogError($"CalculateReducedDamage exception: {ex.Message}");
+            return originalDamage;
+        }
+    }
+
+    /// <summary>
+    /// Calculates scaled hit-enemy damage based on the player's Tumble Launch upgrade level.
+    /// Called from the IL-injected code in HitEnemy.
+    /// Formula: baseDamage + (upgradesOwned * damagePerLevel)
+    /// </summary>
+    public static int CalculateHitEnemyDamage(int originalDamage, PlayerTumble tumble)
+    {
+        try
+        {
+            int damagePerLevel = Increase_Tumble_Damage.DamagePerUpgradeLevel.Value;
+            int configuredBase = Increase_Tumble_Damage.TumbleDamageOnHitEnemy.Value;
+
+            // Use configured base if set, otherwise keep the game's original value.
+            int baseDamage = configuredBase > 0 ? configuredBase : originalDamage;
+
+            // If no per-level scaling, just return the base.
+            if (damagePerLevel == 0)
+                return baseDamage;
+
+            // Read the player's current Tumble Launch upgrade count.
+            string steamId = SemiFunc.PlayerGetSteamID(tumble.playerAvatar);
+            int tumbleUpgrades = StatsManager.instance.playerUpgradeLaunch[steamId];
+
+            int scaledDamage = baseDamage + (tumbleUpgrades * damagePerLevel);
+
+            Increase_Tumble_Damage.Logger.LogDebug(
+                $"HitEnemy damage: {originalDamage} -> {scaledDamage} (base: {baseDamage}, upgrades: {tumbleUpgrades}, per level: {damagePerLevel})");
+
+            return Math.Max(scaledDamage, 0);
+        }
+        catch (Exception ex)
+        {
+            Increase_Tumble_Damage.Logger.LogError($"CalculateHitEnemyDamage exception: {ex.Message}");
             return originalDamage;
         }
     }
