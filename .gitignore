@@ -1,6 +1,7 @@
 # Binaries
 **/bin/
 **/obj/
+**/Reference/
 
 # BepInEx
 **/bepinex/
