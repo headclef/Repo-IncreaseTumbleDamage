@@ -20,14 +20,14 @@ public class Increase_Tumble_Damage : BaseUnityPlugin
     internal Harmony? Harmony { get; set; }
 
     // ── Enemy Damage Scaling Config ──
-    internal static ConfigEntry<bool> EnableDamageOnEnemy = null!;
-    internal static ConfigEntry<float> MultiplierPerLevel = null!;
-    internal static ConfigEntry<float> MaxMultiplier = null!;
+    public static ConfigEntry<bool> EnableDamageOnEnemy = null!;
+    public static ConfigEntry<float> MultiplierPerLevel = null!;
+    public static ConfigEntry<float> MaxMultiplier = null!;
 
     // ── Self-Damage Reduction Config ──
-    internal static ConfigEntry<bool> EnableDamageOnPlayer = null!;
-    internal static ConfigEntry<int> UpgradesNeededForMaxReduction = null!;
-    internal static ConfigEntry<float> MaxDamageReduction = null!;
+    public static ConfigEntry<bool> EnableDamageOnPlayer = null!;
+    public static ConfigEntry<int> UpgradesNeededForMaxReduction = null!;
+    public static ConfigEntry<float> MaxDamageReduction = null!;
 
     private void Awake()
     {
