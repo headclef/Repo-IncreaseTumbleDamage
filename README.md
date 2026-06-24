@@ -76,11 +76,10 @@ All settings are in `BepInEx/config/headclef.IncreaseTumbleDamage.cfg`.
 
 ### Building
 
-> **Note:** Build Character Stats first, as this project references it at compile time.
+This project is part of the `Repo.slnx` solution and references Character Stats at compile time. Build the **whole solution** so dependencies build in the correct order:
 
 ```bash
-dotnet build "../Character Stats/Character Stats.csproj"
-dotnet build
+dotnet build ../Repo.slnx
 ```
 
 ## License
