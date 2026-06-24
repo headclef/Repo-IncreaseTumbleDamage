@@ -61,8 +61,8 @@ internal static class TumbleLaunchDamagePatch
             // Scale the enemyDamage field directly (same approach as reference mod)
             __instance.enemyDamage = Mathf.RoundToInt(tag.baseDamage * multiplier);
 
-            Increase_Tumble_Damage.Logger.LogInfo(
-                $"EnemyHurt TUMBLE: damage {tag.baseDamage} -> {__instance.enemyDamage} (multiplier: {multiplier:F2}, upgrades: {tumbleUpgrades})");
+            // Increase_Tumble_Damage.Logger.LogInfo(
+            //     $"EnemyHurt TUMBLE: damage {tag.baseDamage} -> {__instance.enemyDamage} (multiplier: {multiplier:F2}, upgrades: {tumbleUpgrades})");
         }
         catch (Exception ex)
         {
@@ -116,8 +116,8 @@ internal static class TumbleLaunchDamagePatch
             int reduced = Math.Max((int)(original * damageMultiplier), 0);
             __instance.impactHurtDamage = reduced;
 
-            Increase_Tumble_Damage.Logger.LogInfo(
-                $"BreakImpact SCALED: impactHurtDamage {original} -> {reduced} (reduction: {reductionRatio:P0}, upgrades: {tumbleUpgrades})");
+            // Increase_Tumble_Damage.Logger.LogInfo(
+            //     $"BreakImpact SCALED: impactHurtDamage {original} -> {reduced} (reduction: {reductionRatio:P0}, upgrades: {tumbleUpgrades})");
         }
         catch (Exception ex)
         {
